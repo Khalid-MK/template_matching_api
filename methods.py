@@ -19,6 +19,12 @@ def search_similar_parts(image, region, sensitivity, rotation, filter_color):
     # selected_region = image.crop((x1, y1, x2, y2))
     selected_region = image[y1:y2, x1:x2]
 
+    # prevent from searching for a single color
+    selected_region_2d = selected_region.reshape(-1, 3)
+    unique_colors = np.unique(selected_region_2d, axis=0)
+    if unique_colors.shape[0] == 1:
+        return []
+
     selected_array = np.array(selected_region)
 
     if not selected_array.any(): return []
@@ -44,6 +50,7 @@ def search_similar_parts(image, region, sensitivity, rotation, filter_color):
         rotated_regions.append(cv2.rotate(selected_region, cv2.ROTATE_90_COUNTERCLOCKWISE))
     
     threshold = sensitivity
+    if threshold > 0.9 : threshold = 0.9
 
     if len(image.shape) == 3 and image.shape[2] == 3:
             # Convert BGR image to grayscale if it's not already
@@ -97,7 +104,7 @@ def search_similar_parts(image, region, sensitivity, rotation, filter_color):
             if is_unique:  unique_match_positions.append([x, y, (x + w), (y + h)])
 
     # cv2.rectangle(search_image_color, (start_x, start_y), (end_x, end_y), (255, 0, 0), 3)
-    search_image_color = Image.fromarray(search_image_color)
-    search_image_color.show()
+    # search_image_color = Image.fromarray(search_image_color)
+    # search_image_color.show()
             
     return unique_match_positions
